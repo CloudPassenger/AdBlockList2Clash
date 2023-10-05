@@ -29,11 +29,11 @@ jobs:
       
       - name: Convert rules
         run: |
-          ./scripts/convert_dnsmasq.sh "hBlock" "https://hblock.molinero.dev/hosts_dnsmasq.conf" ./output/hBlock.yaml
-          ./scripts/convert_dnsmasq.sh "OISD Small" "https://small.oisd.nl/dnsmasq" ./output/oisd_small.yaml
-          ./scripts/convert_dnsmasq.sh "OISD Big" "https://big.oisd.nl/dnsmasq" ./output/oisd_big.yaml
-          ./scripts/convert_dnsmasq.sh "OISD NSFW" "https://big.oisd.nl/dnsmasq" ./output/oisd_nsfw.yaml
-          ./scripts/convert_hosts.sh "StevenBlack Hosts" "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts" ./output/stevenblack.yaml
+          ./scripts/convert_dnsmasq.sh 'hBlock' "https://hblock.molinero.dev/hosts_dnsmasq.conf" ./output/hBlock.yaml
+          ./scripts/convert_dnsmasq.sh 'OISD Small' "https://small.oisd.nl/dnsmasq" ./output/oisd_small.yaml
+          ./scripts/convert_dnsmasq.sh 'OISD Big' "https://big.oisd.nl/dnsmasq" ./output/oisd_big.yaml
+          ./scripts/convert_dnsmasq.sh 'OISD NSFW' "https://big.oisd.nl/dnsmasq" ./output/oisd_nsfw.yaml
+          ./scripts/convert_hosts.sh 'StevenBlack Hosts' "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts" ./output/stevenblack.yaml
       
       - name: Git push assets to "release" branch
         run: |
