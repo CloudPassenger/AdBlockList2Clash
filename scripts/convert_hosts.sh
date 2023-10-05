@@ -30,4 +30,4 @@ convert_hosts() {
 	rm -rf ./temp
 }
 
-convert_hosts $1 $2 $3
+convert_hosts "$@"

@@ -31,4 +31,4 @@ convert_dnsmasq() {
 	rm -rf ./temp
 }
 
-convert_dnsmasq $1 $2 $3
+convert_dnsmasq "$@"
