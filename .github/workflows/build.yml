@@ -1,0 +1,55 @@
+name: Build Clash Rules
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout codebase
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup environments
+        run: |
+          echo "TAG_NAME=$(date +%Y%m%d%H%M)" >> $GITHUB_ENV
+          echo "RELEASE_NAME=$(date +%Y%m%d%H%M)" >> $GITHUB_ENV
+          mkdir -p ./output
+          chmod +x ./scripts/convert_dnsmasq.sh
+          chmod +x ./scripts/convert_hosts.sh
+        shell: bash
+      
+      - name: Convert rules
+        run: |
+          ./scripts/convert_dnsmasq.sh "hBlock" "https://hblock.molinero.dev/hosts_dnsmasq.conf" ./output/hBlock.yaml
+          ./scripts/convert_dnsmasq.sh "OISD Small" "https://small.oisd.nl/dnsmasq" ./output/oisd_small.yaml
+          ./scripts/convert_dnsmasq.sh "OISD Big" "https://big.oisd.nl/dnsmasq" ./output/oisd_big.yaml
+          ./scripts/convert_dnsmasq.sh "OISD NSFW" "https://big.oisd.nl/dnsmasq" ./output/oisd_nsfw.yaml
+          ./scripts/convert_hosts.sh "StevenBlack Hosts" "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts" ./output/stevenblack.yaml
+      
+      - name: Git push assets to "release" branch
+        run: |
+          cd output || exit 1
+          git init
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b release
+          git add -A
+          git commit -m "${{ env.RELEASE_NAME }}"
+          git remote add push "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
+          git push -f -u push release
+
+      - name: Purge jsdelivr CDN
+        run: |
+          cd output || exit 1
+          for file in $(ls); do
+            curl -i "https://purge.jsdelivr.net/gh/${{ github.repository }}@release/${file}"
+          done
