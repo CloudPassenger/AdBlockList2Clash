@@ -25,15 +25,36 @@ jobs:
           mkdir -p ./output
           chmod +x ./scripts/convert_dnsmasq.sh
           chmod +x ./scripts/convert_hosts.sh
+          chmod +x ./scripts/domain_to_classical.sh
         shell: bash
+
+      - name: Download Latest sing-srs-converter
+        run: |
+          github_api="https://api.github.com/repos/PuerNya/sing-srs-converter/releases/latest"
+          download_url="$(curl -s ${github_api} | grep "browser_download_url" | grep -oE "https:\/\/.*\/sing-srs-converter.*-linux-x86_64" | head -n 1)"
+          curl -L -o sing-srs-converter ${download_url}
+          chmod +x sing-srs-converter
       
       - name: Convert rules
         run: |
+          # Convert dnsmasq/hosts to domain payloads
           ./scripts/convert_dnsmasq.sh "hBlock" "https://hblock.molinero.dev/hosts_dnsmasq.conf" ./output/hBlock.yaml
           ./scripts/convert_dnsmasq.sh "OISD Small" "https://small.oisd.nl/dnsmasq" ./output/oisd_small.yaml
           ./scripts/convert_dnsmasq.sh "OISD Big" "https://big.oisd.nl/dnsmasq" ./output/oisd_big.yaml
           ./scripts/convert_dnsmasq.sh "OISD NSFW" "https://big.oisd.nl/dnsmasq" ./output/oisd_nsfw.yaml
           ./scripts/convert_hosts.sh "StevenBlack Hosts" "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts" ./output/stevenblack.yaml
+          # Convert domain payloads to classical payloads
+          ./scripts/domain_to_classical.sh ./output/hBlock.yaml ./output/hBlock_Classical.yaml
+          ./scripts/domain_to_classical.sh ./output/oisd_small.yaml ./output/oisd_small_Classical.yaml
+          ./scripts/domain_to_classical.sh ./output/oisd_big.yaml ./output/oisd_big_Classical.yaml
+          ./scripts/domain_to_classical.sh ./output/oisd_nsfw.yaml ./output/oisd_nsfw_Classical.yaml
+          ./scripts/domain_to_classical.sh ./output/stevenblack.yaml ./output/stevenblack_Classical.yaml
+          # Use sing-srs-converter to convert to sing-box format
+          ./sing-srs-converter ./output/hBlock_Classical.yaml -m -o ./output/hBlock
+          ./sing-srs-converter ./output/oisd_small_Classical.yaml -m -o ./output/oisd_small
+          ./sing-srs-converter ./output/oisd_big_Classical.yaml -m -o ./output/oisd_big
+          ./sing-srs-converter ./output/oisd_nsfw_Classical.yaml -m -o ./output/oisd_nsfw
+          ./sing-srs-converter ./output/stevenblack_Classical.yaml -m -o ./output/stevenblack
       
       - name: Git push assets to "release" branch
         run: |
